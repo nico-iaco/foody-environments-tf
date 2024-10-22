@@ -224,3 +224,45 @@ resource "google_cloud_run_v2_service" "grocery_be" {
   }
 }
 # terraform import google_cloud_run_v2_service.grocery_be projects/foody-me/locations/us-central1/services/grocery-be
+
+resource "google_compute_instance" "my_instance" {
+  zone = "us-central1-a"
+  name = "test"
+
+  machine_type = "n1-standard-16" 
+  network_interface {
+    network = "default"
+    access_config {}
+  }
+
+  boot_disk {
+    initialize_params {
+      image = "debian-cloud/debian-9"
+    }
+  }
+
+  scheduling {
+    preemptible = true
+  }
+
+  guest_accelerator {
+    type = "nvidia-tesla-t4" 
+    count = 4
+  }
+
+  labels = {
+    environment = "production"
+    service = "web-app"
+  }
+}
+
+resource "google_cloudfunctions_function" "my_function" {
+  runtime = "nodejs20"
+  name = "test"
+  available_memory_mb = 512
+
+  labels = {
+    environment = "Prod"
+  }
+}
+
