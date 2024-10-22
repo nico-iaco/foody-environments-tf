@@ -229,7 +229,7 @@ resource "google_compute_instance" "my_instance" {
   zone = "us-central1-a"
   name = "test"
 
-  machine_type = "n1-standard-16" 
+  machine_type = "e2-standard-16" 
   network_interface {
     network = "default"
     access_config {}
@@ -243,11 +243,6 @@ resource "google_compute_instance" "my_instance" {
 
   scheduling {
     preemptible = true
-  }
-
-  guest_accelerator {
-    type = "nvidia-tesla-t4" 
-    count = 4
   }
 
   labels = {
