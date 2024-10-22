@@ -1,4 +1,4 @@
-# Foody Environments Terraform Configuration
+# Foody Environments Terraform Configuration [![infracost](https://img.shields.io/endpoint?url=https://dashboard.api.infracost.io/shields/json/22b4cb2a-20b0-461f-afcb-a4155dc55813/repos/ee016c2a-09dc-4b1e-a928-beeb5ef59644/branch/1c1abc0f-0523-4c6f-a75f-afb9257af882)](https://dashboard.infracost.io/org/nicolaiacovelli98/repos/ee016c2a-09dc-4b1e-a928-beeb5ef59644?tab=settings)
 
 This repository contains the Terraform configuration for managing the infrastructure of the Foody project. The configuration is organized to manage different environments, with the current setup focusing on the production environment.
 
