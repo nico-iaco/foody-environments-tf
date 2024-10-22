@@ -29,7 +29,7 @@ resource "google_artifact_registry_repository" "foody_ar" {
 
 resource "google_project" "foody_me" {
   auto_create_network = true
-  billing_account = var.billing_account
+  billing_account     = var.billing_account
   labels = {
     firebase = "enabled"
   }
@@ -46,7 +46,7 @@ resource "google_cloud_run_v2_service" "food_details_integrator_be" {
     containers {
       env {
         name  = "REDIS_ENABLED"
-        value = "false"
+        value = "true"
       }
       env {
         name  = "GIN_MODE"
@@ -57,7 +57,8 @@ resource "google_cloud_run_v2_service" "food_details_integrator_be" {
         value = "false"
       }
       env {
-        name = "REDIS_URL"
+        name  = "REDIS_URL"
+        value = var.redis_url
       }
       image = "us-central1-docker.pkg.dev/foody-me/foody-ar/food-details-integrator-be:${var.food_details_integrator_version}"
       ports {
@@ -70,6 +71,13 @@ resource "google_cloud_run_v2_service" "food_details_integrator_be" {
           cpu    = "1000m"
           memory = "256Mi"
         }
+      }
+    }
+    vpc_access {
+      network_interfaces {
+        network    = "foody-net"
+        subnetwork = "foody-subnet"
+        tags       = ["food-details-integrator-be"]
       }
     }
     max_instance_request_concurrency = 80
@@ -228,11 +236,11 @@ resource "google_cloud_run_v2_service" "grocery_be" {
 resource "google_service_account" "foody-vm-sa" {
   account_id   = "foody-vm-sa"
   display_name = "foody-vm-sa"
-  description = "Service account for foody-vm"
+  description  = "Service account for foody-vm"
 }
 
 resource "google_compute_instance_template" "foody_instance_template" {
-  name  = "foody-instance-template"
+  name         = "foody-instance-template"
   machine_type = "e2-micro"
   region       = local.region
 
@@ -245,18 +253,18 @@ resource "google_compute_instance_template" "foody_instance_template" {
 
   // boot disk
   disk {
-    auto_delete = true
-    boot        = true
+    auto_delete  = true
+    boot         = true
     source_image = "debian-cloud/debian-12"
     disk_size_gb = 30
     type         = "PERSISTENT"
-    disk_name   = "foody-disk"
-    disk_type = "pd-standard"
+    disk_name    = "foody-disk"
+    disk_type    = "pd-standard"
   }
 
   // networking
   network_interface {
-    network = "projects/foody-me/global/networks/foody-net"
+    network    = "projects/foody-me/global/networks/foody-net"
     subnetwork = "projects/foody-me/regions/us-central1/subnetworks/foody-subnet"
   }
 
@@ -272,13 +280,33 @@ resource "google_compute_instance_from_template" "foody-vm" {
   source_instance_template = google_compute_instance_template.foody_instance_template.self_link_unique
 
   service_account {
-    email = google_service_account.foody-vm-sa.email
-    scopes = [ "cloud-platform" ]
+    email  = google_service_account.foody-vm-sa.email
+    scopes = ["cloud-platform"]
   }
+
+  tags = ["allow-redis-from-foody-app"]
 
   network_interface {
     access_config {
       network_tier = "STANDARD"
     }
   }
+}
+
+resource "google_compute_firewall" "allow-redis-from-foody-app" {
+  name        = "allow-redis-from-foody-app"
+  network     = "foody-net"
+  description = "Enable access to Redis from Foody app"
+
+  priority = 1000
+
+  direction = "INGRESS"
+
+  allow {
+    protocol = "tcp"
+    ports    = ["6379"]
+  }
+
+  source_tags = ["food-details-integrator-be"]
+  target_tags = ["allow-redis-from-foody-app"]
 }
