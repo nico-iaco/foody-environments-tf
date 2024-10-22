@@ -224,3 +224,54 @@ resource "google_cloud_run_v2_service" "grocery_be" {
   }
 }
 # terraform import google_cloud_run_v2_service.grocery_be projects/foody-me/locations/us-central1/services/grocery-be
+
+resource "google_service_account" "foody-vm-sa" {
+  account_id   = "foody-vm-sa"
+  display_name = "foody-vm-sa"
+  description = "Service account for foody-vm"
+}
+
+resource "google_compute_instance_template" "foody_instance_template" {
+  name  = "foody-instance-template"
+  machine_type = "e2-micro"
+  region       = local.region
+
+
+  service_account {
+    # Google recommends custom service accounts that have cloud-platform scope and permissions granted via IAM Roles.
+    email  = google_service_account.foody-vm-sa.email
+    scopes = ["cloud-platform"]
+  }
+
+  // boot disk
+  disk {
+    auto_delete = true
+    boot        = true
+    source      = "projects/debian-cloud/global/images/family/debian-12"
+    disk_size_gb = 30
+    type         = "pd-standard"
+    disk_name   = "foody-disk"
+  }
+
+  // networking
+  network_interface {
+    network = "projects/foody-me/global/networks/foody-net"
+    subnetwork = "projects/foody-me/regions/us-central1/subnetworks/foody-subnet"
+  }
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+resource "google_compute_instance_from_template" "foody-vm" {
+  name = "foody-vm"
+  zone = "us-central1-a"
+
+  source_instance_template = google_compute_instance_template.foody_instance_template.self_link_unique
+
+  service_account {
+    email = google_service_account.foody-vm-sa.email
+    scopes = [ "cloud-platform" ]
+  }
+}
