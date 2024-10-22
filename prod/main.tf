@@ -247,7 +247,7 @@ resource "google_compute_instance_template" "foody_instance_template" {
   disk {
     auto_delete = true
     boot        = true
-    source      = "projects/debian-cloud/global/images/family/debian-12"
+    source_image = "debian-cloud/debian-12"
     disk_size_gb = 30
     type         = "pd-standard"
     disk_name   = "foody-disk"
