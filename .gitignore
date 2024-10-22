@@ -1,0 +1,23 @@
+# Ignora i file di configurazione di Terraform
+crash.log
+*.tfvars
+*.tfvars.json
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Ignora la directory .terraform
+.terraform/
+.terraform.lock.hcl
+
+# Ignora i file di log
+*.log
+
+# Ignora i file di configurazione locali
+.terraformrc
+.terraformrc.json
+.terraform/environment
+
+# Ignora i file di configurazione di provider
+.terraform/providers/
