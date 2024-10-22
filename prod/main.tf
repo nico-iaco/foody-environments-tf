@@ -249,8 +249,9 @@ resource "google_compute_instance_template" "foody_instance_template" {
     boot        = true
     source_image = "debian-cloud/debian-12"
     disk_size_gb = 30
-    type         = "pd-standard"
+    type         = "PERSISTENT"
     disk_name   = "foody-disk"
+    disk_type = "pd-standard"
   }
 
   // networking
@@ -273,5 +274,11 @@ resource "google_compute_instance_from_template" "foody-vm" {
   service_account {
     email = google_service_account.foody-vm-sa.email
     scopes = [ "cloud-platform" ]
+  }
+
+  network_interface {
+    access_config {
+      network_tier = "STANDARD"
+    }
   }
 }
