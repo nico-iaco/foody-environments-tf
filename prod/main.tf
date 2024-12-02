@@ -204,7 +204,7 @@ resource "google_cloud_run_v2_service" "grocery_be" {
         cpu_idle = true
         limits = {
           cpu    = "1000m"
-          memory = "512Mi"
+          memory = "1024Mi"
         }
         startup_cpu_boost = true
       }
